@@ -61,14 +61,34 @@ export async function generateAIAnswer(
   return chat(messages)
 }
 
+function lowerKeys<T extends Record<string, any>>(
+  obj: T | undefined
+): Record<string, any> | undefined {
+  if (!obj || typeof obj !== 'object') return obj
+  const out: Record<string, any> = {}
+  for (const k of Object.keys(obj)) {
+    out[k.toLowerCase()] = (obj as any)[k]
+  }
+  return out
+}
+
+function coerceScore(n: any): number {
+  // Accept 0..1 floats or 0..100 percentages; clamp to [0,1]
+  const x = typeof n === 'number' ? n : Number(n)
+  if (!isFinite(x)) return 0
+  const normalized = x > 1 ? x / 100 : x
+  return Math.max(0, Math.min(1, normalized))
+}
+
 function parseScores(jsonText: string): TraitScores {
   try {
-    const obj = JSON.parse(jsonText)
+    const raw = JSON.parse(jsonText)
+    const obj = lowerKeys(raw) as Record<string, any>
     const scores: TraitScores = {
-      empathy: clamp(obj.empathy),
-      confidence: clamp(obj.confidence),
-      rationality: clamp(obj.rationality),
-      warmth: clamp(obj.warmth),
+      empathy: coerceScore(obj?.empathy),
+      confidence: coerceScore(obj?.confidence),
+      rationality: coerceScore(obj?.rationality),
+      warmth: coerceScore(obj?.warmth),
     }
     return scores
   } catch (e) {
@@ -77,12 +97,6 @@ function parseScores(jsonText: string): TraitScores {
     if (match) return parseScores(match[0])
     throw new Error('Failed to parse trait scores JSON')
   }
-}
-
-function clamp(n: any): number {
-  const x = typeof n === 'number' ? n : Number(n)
-  if (!isFinite(x)) return 0
-  return Math.max(0, Math.min(1, x))
 }
 
 export async function analyzeSingle(text: string): Promise<TraitScores> {
@@ -117,21 +131,27 @@ export async function analyzeTraits(texts: {
   ])
 
   try {
-    const obj = JSON.parse(content)
+    const raw = JSON.parse(content)
+    const o = lowerKeys(raw) as Record<string, any>
     const bundle: AnalysisBundle = {}
-    if (obj.human) bundle.human = ensureScores(obj.human)
-    if (obj.ai) bundle.ai = ensureScores(obj.ai)
-    if (obj.collab) bundle.collab = ensureScores(obj.collab)
+    // Accept HUMAN/AI/COLLAB or human/ai/collab
+    if (o.human) bundle.human = ensureScores(o.human)
+    if (o.ai) bundle.ai = ensureScores(o.ai)
+    if (o.collab) bundle.collab = ensureScores(o.collab)
+    // Fallback: map from possible upper-case role keys
+    if (!bundle.human && o['human']) bundle.human = ensureScores(o['human'])
+    if (!bundle.human && o['hum']) bundle.human = ensureScores(o['hum'])
     return bundle
   } catch (e) {
     // Fallback: try to parse embedded JSON block
     const match = content.match(/\{[\s\S]*\}/)
     if (match) {
-      const obj = JSON.parse(match[0])
+      const raw = JSON.parse(match[0])
+      const o = lowerKeys(raw) as Record<string, any>
       const bundle: AnalysisBundle = {}
-      if (obj.human) bundle.human = ensureScores(obj.human)
-      if (obj.ai) bundle.ai = ensureScores(obj.ai)
-      if (obj.collab) bundle.collab = ensureScores(obj.collab)
+      if (o.human) bundle.human = ensureScores(o.human)
+      if (o.ai) bundle.ai = ensureScores(o.ai)
+      if (o.collab) bundle.collab = ensureScores(o.collab)
       return bundle
     }
     throw new Error('Failed to parse analysis JSON')
@@ -139,11 +159,12 @@ export async function analyzeTraits(texts: {
 }
 
 function ensureScores(x: any): TraitScores {
+  const o = lowerKeys(x) as Record<string, any>
   const s: TraitScores = {
-    empathy: clamp(x?.empathy),
-    confidence: clamp(x?.confidence),
-    rationality: clamp(x?.rationality),
-    warmth: clamp(x?.warmth),
+    empathy: coerceScore(o?.empathy),
+    confidence: coerceScore(o?.confidence),
+    rationality: coerceScore(o?.rationality),
+    warmth: coerceScore(o?.warmth),
   }
   return s
 }

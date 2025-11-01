@@ -1,4 +1,11 @@
-import { Button, Heading, Text, VStack, useToast } from '@chakra-ui/react'
+import {
+  Button,
+  Heading,
+  HStack,
+  Text,
+  VStack,
+  useToast,
+} from '@chakra-ui/react'
 import LayoutCard from '../components/LayoutCard'
 import RadarTraits from '../components/RadarTraits'
 import BarTraits from '../components/BarTraits'
@@ -18,24 +25,39 @@ export default function Step3Traits() {
     setLoading,
   } = useAppStore()
 
-  useEffect(() => {
-    const run = async () => {
-      if (!humanAnswer || !aiAnswer) return
-      try {
-        setLoading({ analyze: true })
-        const bundle = await analyzeTraits({ human: humanAnswer, ai: aiAnswer })
-        setTraits(bundle)
-      } catch (e: any) {
-        toast({
-          status: 'error',
-          title: 'Analysis failed',
-          description: e?.message || String(e),
-        })
-      } finally {
-        setLoading({ analyze: false })
-      }
+  const run = async () => {
+    if (!humanAnswer || !aiAnswer) return
+    try {
+      setLoading({ analyze: true })
+      const bundle = await analyzeTraits({ human: humanAnswer, ai: aiAnswer })
+      setTraits(bundle)
+    } catch (e: any) {
+      toast({
+        status: 'error',
+        title: 'Analysis failed',
+        description: e?.message || String(e),
+      })
+    } finally {
+      setLoading({ analyze: false })
     }
-    if (!traits.human || !traits.ai) run()
+  }
+
+  useEffect(() => {
+    const zeroish = (obj?: {
+      empathy: number
+      confidence: number
+      rationality: number
+      warmth: number
+    }) =>
+      !obj || obj.empathy + obj.confidence + obj.rationality + obj.warmth === 0
+    if (
+      !traits.human ||
+      !traits.ai ||
+      zeroish(traits.human) ||
+      zeroish(traits.ai)
+    ) {
+      void run()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -49,13 +71,14 @@ export default function Step3Traits() {
         </Text>
         <RadarTraits data={traits} />
         <BarTraits human={traits.human} ai={traits.ai} />
-        <Button
-          colorScheme='purple'
-          onClick={() => setStep(4)}
-          alignSelf='flex-end'
-        >
-          Next: Collaborate
-        </Button>
+        <HStack justify='space-between'>
+          <Button variant='ghost' onClick={run} isLoading={loading.analyze}>
+            Re-analyze
+          </Button>
+          <Button colorScheme='purple' onClick={() => setStep(4)}>
+            Next: Collaborate
+          </Button>
+        </HStack>
       </VStack>
     </LayoutCard>
   )
