@@ -46,7 +46,12 @@ export default function RadarTraits({ data }: Props) {
           dataKey='trait'
           tick={{ fill: 'rgba(255,255,255,0.85)', fontSize: 12 }}
         />
-        <PolarRadiusAxis angle={45} domain={[0, 1]} tick={false} />
+        <PolarRadiusAxis
+          angle={45}
+          domain={[0, 1]}
+          tick={false}
+          axisLine={false}
+        />
         <Radar
           name='Human'
           dataKey='human'
