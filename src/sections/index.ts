@@ -1,0 +1,5 @@
+export { default as Step1Question } from './Step1Question'
+export { default as Step2Answers } from './Step2Answers'
+export { default as Step3Traits } from './Step3Traits'
+export { default as Step4Collaborate } from './Step4Collaborate'
+export { default as Step5Compare } from './Step5Compare'
