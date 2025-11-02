@@ -3,19 +3,27 @@ export const pageVariants = {
   enter: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
   },
   exit: {
     opacity: 0,
-    y: -12,
-    transition: { duration: 0.25, ease: 'easeInOut' },
+    y: -8,
+    transition: { duration: 0.22, ease: [0.4, 0, 1, 1] },
   },
 }
 
 export const cardVariants = {
-  hidden: { opacity: 0, scale: 0.98 },
-  enter: { opacity: 1, scale: 1, transition: { duration: 0.25 } },
-  exit: { opacity: 0, scale: 0.98, transition: { duration: 0.2 } },
+  hidden: { opacity: 0, y: 10 },
+  enter: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
+  },
+  exit: {
+    opacity: 0,
+    y: -6,
+    transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
+  },
 }
 
 export const listStagger = {

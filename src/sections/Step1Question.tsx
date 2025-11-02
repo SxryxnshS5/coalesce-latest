@@ -45,7 +45,7 @@ export default function Step1Question() {
           </VStack>
         </Box>
         <Button
-          colorScheme='purple'
+          colorScheme='gray'
           isDisabled={!question.trim()}
           onClick={() => setStep(2)}
           alignSelf='flex-end'

@@ -103,7 +103,7 @@ export default function Step5Compare() {
             Re-analyze
           </Button>
           <Button
-            colorScheme='purple'
+            colorScheme='gray'
             onClick={handleInsight}
             isLoading={loading.insight}
           >

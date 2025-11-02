@@ -94,7 +94,7 @@ export default function Step2Answers() {
         </Grid>
         <VStack align='end'>
           <Button
-            colorScheme='purple'
+            colorScheme='gray'
             isDisabled={!humanAnswer.trim() || !aiAnswer.trim()}
             onClick={() => setStep(3)}
           >

@@ -12,13 +12,14 @@ export default function LayoutCard(props: Props) {
       initial='hidden'
       animate='enter'
       exit='exit'
-      bg='whiteAlpha.50'
+      bg='rgba(255,255,255,0.035)'
       borderWidth='1px'
-      borderColor='whiteAlpha.200'
+      borderColor='whiteAlpha.150'
       backdropFilter='blur(8px)'
       rounded='xl'
       shadow='lg'
       p={{ base: 4, md: 6 }}
+      // keep variants for mount/unmount only; no hover/tap scaling for minimal feel
       {...props}
     />
   )

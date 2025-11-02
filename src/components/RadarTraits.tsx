@@ -12,6 +12,9 @@ import type { AnalysisBundle, TraitScores } from '../lib/types'
 
 type Props = {
   data: AnalysisBundle
+  showHuman?: boolean
+  showAI?: boolean
+  showCollab?: boolean
 }
 
 const toData = (scores?: TraitScores) =>
@@ -24,7 +27,12 @@ const toData = (scores?: TraitScores) =>
       ]
     : undefined
 
-export default function RadarTraits({ data }: Props) {
+export default function RadarTraits({
+  data,
+  showHuman = true,
+  showAI = true,
+  showCollab = true,
+}: Props) {
   // Build rows with per-series values for Recharts
   const rows = ['empathy', 'confidence', 'rationality', 'warmth'].map(
     (trait) => ({
@@ -52,27 +60,33 @@ export default function RadarTraits({ data }: Props) {
           tick={false}
           axisLine={false}
         />
-        <Radar
-          name='Human'
-          dataKey='human'
-          stroke='#ec4899'
-          fill='#ec4899'
-          fillOpacity={0.2}
-        />
-        <Radar
-          name='AI'
-          dataKey='ai'
-          stroke='#22d3ee'
-          fill='#22d3ee'
-          fillOpacity={0.2}
-        />
-        <Radar
-          name='Collab'
-          dataKey='collab'
-          stroke='#a78bfa'
-          fill='#a78bfa'
-          fillOpacity={0.2}
-        />
+        {showHuman && (
+          <Radar
+            name='Human'
+            dataKey='human'
+            stroke='#ec4899'
+            fill='#ec4899'
+            fillOpacity={0.2}
+          />
+        )}
+        {showAI && (
+          <Radar
+            name='AI'
+            dataKey='ai'
+            stroke='#22d3ee'
+            fill='#22d3ee'
+            fillOpacity={0.2}
+          />
+        )}
+        {showCollab && (
+          <Radar
+            name='Collab'
+            dataKey='collab'
+            stroke='#a78bfa'
+            fill='#a78bfa'
+            fillOpacity={0.2}
+          />
+        )}
         <Legend />
         <Tooltip formatter={(v: any) => `${Math.round(Number(v) * 100)}%`} />
       </RadarChart>

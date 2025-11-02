@@ -21,7 +21,7 @@ export default function Stepper({ step }: Props) {
       <Progress
         value={pct}
         size='sm'
-        colorScheme='purple'
+        colorScheme='gray'
         bg='whiteAlpha.200'
         rounded='full'
       />

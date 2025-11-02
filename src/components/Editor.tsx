@@ -111,9 +111,13 @@ export default function Editor({
         resize='vertical'
         autoFocus={autoFocus}
         variant='filled'
+        focusBorderColor='whiteAlpha.600'
         bg='whiteAlpha.100'
         _hover={{ bg: 'whiteAlpha.200' }}
         _focus={{ bg: 'whiteAlpha.200' }}
+        _focusVisible={{
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.7) inset',
+        }}
       />
     </FormControl>
   )

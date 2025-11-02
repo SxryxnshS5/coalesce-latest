@@ -69,13 +69,13 @@ export default function Step3Traits() {
           See how tone and reasoning show up across empathy, confidence,
           rationality, and warmth.
         </Text>
-        <RadarTraits data={traits} />
+        <RadarTraits data={traits} showCollab={false} />
         <BarTraits human={traits.human} ai={traits.ai} />
         <HStack justify='space-between'>
           <Button variant='ghost' onClick={run} isLoading={loading.analyze}>
             Re-analyze
           </Button>
-          <Button colorScheme='purple' onClick={() => setStep(4)}>
+          <Button colorScheme='gray' onClick={() => setStep(4)}>
             Next: Collaborate
           </Button>
         </HStack>

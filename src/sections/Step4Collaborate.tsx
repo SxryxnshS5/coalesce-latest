@@ -97,7 +97,7 @@ export default function Step4Collaborate() {
 
         <HStack justify='flex-end'>
           <Button
-            colorScheme='purple'
+            colorScheme='gray'
             onClick={() => setStep(5)}
             isDisabled={!seed.trim()}
           >
