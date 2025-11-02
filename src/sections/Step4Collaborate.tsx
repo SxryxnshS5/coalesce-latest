@@ -70,7 +70,7 @@ export default function Step4Collaborate() {
         <Heading size='md'>Step 4 — Co-write a bridged response</Heading>
         <Text color='whiteAlpha.800'>
           Take turns refining the shared response. Watch traits update as you
-          write.
+          write. Press Ctrl+Enter for the AI to take a turn.
         </Text>
         <Editor
           label='Collaborative response'
@@ -78,10 +78,12 @@ export default function Step4Collaborate() {
           onChange={setCollabText}
           onDebouncedChange={handleDebouncedAnalyze}
           rows={12}
+          rightHint='Your turn'
           rightAction={{
-            label: "AI's response",
+            label: "AI's turn",
             onClick: handleSuggest,
             isLoading: loading.ai,
+            hotkey: 'Ctrl+Enter',
           }}
         />
 

@@ -17,7 +17,13 @@ type EditorProps = {
   debounceMs?: number
   placeholder?: string
   rows?: number
-  rightAction?: { label: string; onClick: () => void; isLoading?: boolean }
+  rightAction?: {
+    label: string
+    onClick: () => void
+    isLoading?: boolean
+    hotkey?: string
+  }
+  rightHint?: string
   autoFocus?: boolean
 }
 
@@ -30,6 +36,7 @@ export default function Editor({
   placeholder,
   rows = 8,
   rightAction,
+  rightHint,
   autoFocus,
 }: EditorProps) {
   const [internal, setInternal] = useState(value)
@@ -59,7 +66,12 @@ export default function Editor({
     <FormControl>
       <HStack justify='space-between' mb={2}>
         <FormLabel m={0}>{label}</FormLabel>
-        <HStack spacing={2}>
+        <HStack spacing={3}>
+          {rightHint && (
+            <Text fontSize='xs' color='whiteAlpha.800'>
+              {rightHint}
+            </Text>
+          )}
           {rightAction && (
             <HStack spacing={1}>
               <IconButton
@@ -70,8 +82,9 @@ export default function Editor({
                 isLoading={rightAction.isLoading}
                 variant='ghost'
               />
-              <Text fontSize='xs' color='whiteAlpha.700'>
+              <Text fontSize='xs' color='whiteAlpha.800'>
                 {rightAction.label}
+                {rightAction.hotkey ? ` (${rightAction.hotkey})` : ''}
               </Text>
             </HStack>
           )}
@@ -83,6 +96,16 @@ export default function Editor({
       <Textarea
         value={internal}
         onChange={handleChange}
+        onKeyDown={(e) => {
+          if (
+            rightAction?.hotkey?.toLowerCase() === 'ctrl+enter' &&
+            e.ctrlKey &&
+            (e.key === 'Enter' || e.key === 'NumpadEnter')
+          ) {
+            e.preventDefault()
+            rightAction.onClick()
+          }
+        }}
         placeholder={placeholder}
         rows={rows}
         resize='vertical'
