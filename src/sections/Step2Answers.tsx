@@ -11,6 +11,7 @@ import LayoutCard from '../components/LayoutCard'
 import Editor from '../components/Editor'
 import { useAppStore } from '../store/app'
 import { generateAIAnswer } from '../lib/openai'
+import { useEffect, useRef } from 'react'
 
 export default function Step2Answers() {
   const toast = useToast()
@@ -40,6 +41,23 @@ export default function Step2Answers() {
       setLoading({ ai: false })
     }
   }
+
+  // Auto-generate AI answer once the human has written enough (first time only)
+  const hasAutoTriggered = useRef(false)
+  useEffect(() => {
+    const wordCount = (s: string) =>
+      s.trim() ? s.trim().split(/\s+/).length : 0
+    if (
+      !loading.ai &&
+      !aiAnswer &&
+      wordCount(humanAnswer) >= 0 &&
+      question.trim() &&
+      !hasAutoTriggered.current
+    ) {
+      hasAutoTriggered.current = true
+      void handleGenerateAI()
+    }
+  }, [humanAnswer, aiAnswer, question, loading.ai])
 
   return (
     <LayoutCard>

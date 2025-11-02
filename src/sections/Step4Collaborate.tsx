@@ -79,7 +79,7 @@ export default function Step4Collaborate() {
           onDebouncedChange={handleDebouncedAnalyze}
           rows={12}
           rightAction={{
-            label: 'Suggest next',
+            label: "AI's response",
             onClick: handleSuggest,
             isLoading: loading.ai,
           }}

@@ -61,14 +61,19 @@ export default function Editor({
         <FormLabel m={0}>{label}</FormLabel>
         <HStack spacing={2}>
           {rightAction && (
-            <IconButton
-              aria-label={rightAction.label}
-              icon={<RepeatIcon />}
-              size='sm'
-              onClick={rightAction.onClick}
-              isLoading={rightAction.isLoading}
-              variant='ghost'
-            />
+            <HStack spacing={1}>
+              <IconButton
+                aria-label={rightAction.label}
+                icon={<RepeatIcon />}
+                size='sm'
+                onClick={rightAction.onClick}
+                isLoading={rightAction.isLoading}
+                variant='ghost'
+              />
+              <Text fontSize='xs' color='whiteAlpha.700'>
+                {rightAction.label}
+              </Text>
+            </HStack>
           )}
           <Text fontSize='xs' color='whiteAlpha.700'>
             {count} chars
