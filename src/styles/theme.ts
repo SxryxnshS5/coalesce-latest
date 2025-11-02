@@ -26,7 +26,8 @@ const styles = {
   global: {
     'html, body, #root': { minHeight: '100%' },
     body: {
-      bgGradient: 'linear(to-b, brand.900, brand.800)',
+      // Background: gradient from black (bottom-left) to gray (top-right)
+      bgGradient: 'linear(45deg, #000000 0%, #03776aff 100%)',
       color: 'whiteAlpha.900',
       minHeight: '100vh',
       overflowX: 'hidden',
