@@ -24,6 +24,7 @@ export default function Step5Compare() {
     insight,
     setInsight,
     setStep,
+    reset,
     loading,
     setLoading,
   } = useAppStore()
@@ -121,7 +122,7 @@ export default function Step5Compare() {
           </VStack>
         )}
         <HStack justify='space-between'>
-          <Button onClick={() => setStep(1)} variant='ghost'>
+          <Button onClick={reset} variant='ghost'>
             Start over
           </Button>
           <Button onClick={() => setStep(4)} variant='ghost'>
