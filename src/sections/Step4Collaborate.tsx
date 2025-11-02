@@ -29,18 +29,18 @@ export default function Step4Collaborate() {
     setLoading,
   } = useAppStore()
 
-  const seed = !collabText
-    ? 'Let’s bridge our perspectives into a single, empathetic and balanced response...'
-    : collabText
+  const placeholder =
+    'Let’s bridge our perspectives into a single, empathetic and balanced response...'
 
   const handleSuggest = useCallback(async () => {
     try {
       setLoading({ ai: true })
+      const base = collabText || placeholder
       const suggestion = await generateAIAnswer(
         'Continue the collaborative response, 1-2 sentences.',
-        seed
+        base
       )
-      setCollabText(`${seed}\n\n${suggestion}`)
+      setCollabText(collabText ? `${collabText}\n\n${suggestion}` : suggestion)
     } catch (e: any) {
       toast({
         status: 'error',
@@ -50,7 +50,7 @@ export default function Step4Collaborate() {
     } finally {
       setLoading({ ai: false })
     }
-  }, [seed, setCollabText, setLoading, toast])
+  }, [collabText, placeholder, setCollabText, setLoading, toast])
 
   const handleDebouncedAnalyze = useCallback(
     async (text: string) => {
@@ -74,13 +74,13 @@ export default function Step4Collaborate() {
         </Text>
         <Editor
           label='Collaborative response'
-          value={seed}
+          value={collabText}
           onChange={setCollabText}
           onDebouncedChange={handleDebouncedAnalyze}
           rows={12}
-          rightHint='Your turn'
+          placeholder={placeholder}
           rightAction={{
-            label: "AI's turn",
+            label: "Trigger AI's answer",
             onClick: handleSuggest,
             isLoading: loading.ai,
             hotkey: 'Ctrl+Enter',
@@ -99,7 +99,7 @@ export default function Step4Collaborate() {
           <Button
             colorScheme='gray'
             onClick={() => setStep(5)}
-            isDisabled={!seed.trim()}
+            isDisabled={!collabText.trim()}
           >
             Next: Compare & insight
           </Button>
