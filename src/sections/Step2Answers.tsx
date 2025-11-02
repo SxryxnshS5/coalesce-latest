@@ -10,7 +10,7 @@ import {
 import LayoutCard from '../components/LayoutCard'
 import Editor from '../components/Editor'
 import { useAppStore } from '../store/app'
-import { generateAIAnswer } from '../lib/openai'
+import { generateAIAnswer } from '../lib/gemini'
 import { useEffect, useRef } from 'react'
 
 export default function Step2Answers() {

@@ -12,7 +12,7 @@ import LayoutCard from '../components/LayoutCard'
 import Editor from '../components/Editor'
 import RadarTraits from '../components/RadarTraits'
 import { useAppStore } from '../store/app'
-import { analyzeSingle, continueCollaborativeResponse } from '../lib/openai'
+import { analyzeSingle, continueCollaborativeResponse } from '../lib/gemini'
 import { useCallback, useEffect, useRef } from 'react'
 
 export default function Step4Collaborate() {

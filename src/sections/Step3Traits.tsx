@@ -10,7 +10,7 @@ import LayoutCard from '../components/LayoutCard'
 import RadarTraits from '../components/RadarTraits'
 import BarTraits from '../components/BarTraits'
 import { useAppStore } from '../store/app'
-import { analyzeTraits } from '../lib/openai'
+import { analyzeTraits } from '../lib/gemini'
 import { useEffect } from 'react'
 
 export default function Step3Traits() {

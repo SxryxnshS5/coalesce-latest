@@ -10,7 +10,7 @@ import {
 import LayoutCard from '../components/LayoutCard'
 import RadarTraits from '../components/RadarTraits'
 import { useAppStore } from '../store/app'
-import { analyzeTraits, generateInsight } from '../lib/openai'
+import { analyzeTraits, generateInsight } from '../lib/gemini'
 import { useState } from 'react'
 
 export default function Step5Compare() {
@@ -125,7 +125,7 @@ export default function Step5Compare() {
             <Text fontSize='sm' color='whiteAlpha.700'>
               Insight
             </Text>
-            <Textarea value={insight} readOnly rows={6} variant='filled' />
+            <Textarea value={insight} readOnly rows={12} variant='filled' />
           </VStack>
         )}
         <HStack justify='space-between'>
