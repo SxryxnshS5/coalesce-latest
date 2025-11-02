@@ -61,6 +61,30 @@ export async function generateAIAnswer(
   return chat(messages)
 }
 
+export async function continueCollaborativeResponse(
+  question: string,
+  human: string,
+  ai: string,
+  collabSoFar: string,
+  lastHumanTurn?: string
+): Promise<string> {
+  const system =
+    'You are collaborating with a human to co-write a single, empathetic and balanced response. Write as the AI collaborator. Output only the next 1–2 sentences. Be specific, acknowledge or build on the human’s latest point, and keep tightly on-topic to the question. Do not repeat prior content, restate the question, or add generic transitions.'
+  const user =
+    `Question:\n${question}\n\n` +
+    `HUMAN perspective (Step 2):\n"""${human}"""\n\n` +
+    `AI perspective (Step 2):\n"""${ai}"""\n\n` +
+    `Collaborative response so far:\n"""${collabSoFar}"""\n\n` +
+    (lastHumanTurn
+      ? `Human’s latest addition to the collaborative response (respond to this directly):\n"""${lastHumanTurn}"""\n\n`
+      : '') +
+    'As the AI, write only the next 1–2 sentences to advance this same response. No preface, no bullet points.'
+  return chat([
+    { role: 'system', content: system },
+    { role: 'user', content: user },
+  ])
+}
+
 function lowerKeys<T extends Record<string, any>>(
   obj: T | undefined
 ): Record<string, any> | undefined {

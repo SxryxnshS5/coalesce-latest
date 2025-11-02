@@ -12,12 +12,13 @@ import LayoutCard from '../components/LayoutCard'
 import Editor from '../components/Editor'
 import RadarTraits from '../components/RadarTraits'
 import { useAppStore } from '../store/app'
-import { analyzeSingle, generateAIAnswer } from '../lib/openai'
+import { analyzeSingle, continueCollaborativeResponse } from '../lib/openai'
 import { useCallback } from 'react'
 
 export default function Step4Collaborate() {
   const toast = useToast()
   const {
+    question,
     humanAnswer,
     aiAnswer,
     collabText,
@@ -35,10 +36,18 @@ export default function Step4Collaborate() {
   const handleSuggest = useCallback(async () => {
     try {
       setLoading({ ai: true })
-      const base = collabText || placeholder
-      const suggestion = await generateAIAnswer(
-        'Continue the collaborative response, 1-2 sentences.',
-        base
+      const chunks = (collabText || '')
+        .split(/\n{2,}/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+      const lastHumanTurn = chunks.length ? chunks[chunks.length - 1] : ''
+
+      const suggestion = await continueCollaborativeResponse(
+        question,
+        humanAnswer,
+        aiAnswer,
+        collabText || '',
+        lastHumanTurn
       )
       setCollabText(collabText ? `${collabText}\n\n${suggestion}` : suggestion)
     } catch (e: any) {
@@ -50,7 +59,15 @@ export default function Step4Collaborate() {
     } finally {
       setLoading({ ai: false })
     }
-  }, [collabText, placeholder, setCollabText, setLoading, toast])
+  }, [
+    question,
+    humanAnswer,
+    aiAnswer,
+    collabText,
+    setCollabText,
+    setLoading,
+    toast,
+  ])
 
   const handleDebouncedAnalyze = useCallback(
     async (text: string) => {
