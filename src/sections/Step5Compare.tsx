@@ -53,7 +53,14 @@ export default function Step5Compare() {
   const handleInsight = async () => {
     try {
       setLoading({ insight: true })
-      const text = await generateInsight(humanAnswer, aiAnswer, collabText)
+      let acc = ''
+      setInsight(acc)
+      const text = await generateInsight(humanAnswer, aiAnswer, collabText, {
+        onDelta: (chunk) => {
+          acc += chunk
+          setInsight(acc)
+        },
+      })
       setInsight(text)
     } catch (e: any) {
       toast({

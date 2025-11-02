@@ -42,14 +42,25 @@ export default function Step4Collaborate() {
         .filter(Boolean)
       const lastHumanTurn = chunks.length ? chunks[chunks.length - 1] : ''
 
-      const suggestion = await continueCollaborativeResponse(
+      // Start a new AI turn and stream into the editor
+      let base = collabText ? `${collabText}\n\n` : ''
+      let acc = ''
+      setCollabText(base)
+      const final = await continueCollaborativeResponse(
         question,
         humanAnswer,
         aiAnswer,
         collabText || '',
-        lastHumanTurn
+        lastHumanTurn,
+        {
+          onDelta: (chunk) => {
+            acc += chunk
+            setCollabText(base + acc)
+          },
+        }
       )
-      setCollabText(collabText ? `${collabText}\n\n${suggestion}` : suggestion)
+      // Ensure final text is set
+      setCollabText(base + final)
     } catch (e: any) {
       toast({
         status: 'error',

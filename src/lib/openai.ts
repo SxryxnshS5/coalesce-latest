@@ -1,47 +1,205 @@
 import { AnalysisBundle, TraitScores, TRAIT_KEYS } from './types'
 
-const API_URL = 'https://api.openai.com/v1/chat/completions'
-const MODEL = 'gpt-4o-mini'
+// Gemini REST API
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
+// Allow overriding the model via env; fall back to a widely available default
+const GEMINI_MODEL =
+  ((import.meta as any).env?.VITE_GEMINI_MODEL as string | undefined) ||
+  'gemini-2.5-pro'
 
 function getApiKey(): string {
-  const key = (import.meta as any).env?.VITE_OPENAI_API_KEY as
+  const key = (import.meta as any).env?.VITE_GEMINI_API_KEY as
     | string
     | undefined
   if (!key) {
-    throw new Error('Missing VITE_OPENAI_API_KEY. Add it to your .env file.')
+    throw new Error('Missing VITE_GEMINI_API_KEY. Add it to your .env file.')
   }
   return key
 }
 
-async function chat(
-  messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>
-): Promise<string> {
+type Msg = { role: 'system' | 'user' | 'assistant'; content: string }
+
+function toGeminiPayload(messages: Msg[]) {
+  // Extract a single system instruction if provided
+  const system = messages.find((m) => m.role === 'system')?.content
+  // Map chat history to Gemini "contents" format
+  const contents = messages
+    .filter((m) => m.role !== 'system')
+    .map((m) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }))
+
+  const body: any = {
+    contents,
+    generationConfig: {
+      temperature: 0.7,
+    },
+  }
+  if (system) {
+    body.systemInstruction = { role: 'system', parts: [{ text: system }] }
+  }
+  return body
+}
+
+async function chat(messages: Array<Msg>): Promise<string> {
   const key = getApiKey()
-  const res = await fetch(API_URL, {
+  const url = `${GEMINI_API_BASE}/models/${encodeURIComponent(
+    GEMINI_MODEL
+  )}:generateContent`
+
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${key}`,
+      'x-goog-api-key': key,
     },
-    body: JSON.stringify({
-      model: MODEL,
-      messages,
-      temperature: 0.7,
-    }),
+    body: JSON.stringify(toGeminiPayload(messages)),
   })
+
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`OpenAI error ${res.status}: ${text}`)
+    throw new Error(`Gemini error ${res.status}: ${text}`)
   }
+
   const data = await res.json()
-  const content: string | undefined = data?.choices?.[0]?.message?.content
-  if (!content) throw new Error('No content returned from OpenAI')
-  return content.trim()
+  // Attempt to extract the concatenated text from the first candidate
+  const parts = data?.candidates?.[0]?.content?.parts
+  const content: string | undefined = Array.isArray(parts)
+    ? parts
+        .map((p: any) => (typeof p?.text === 'string' ? p.text : ''))
+        .join('')
+        .trim()
+    : undefined
+
+  if (!content) {
+    const block = data?.promptFeedback?.blockReason
+    if (block) {
+      throw new Error(`Gemini returned no content (blocked: ${String(block)})`)
+    }
+    throw new Error('No content returned from Gemini')
+  }
+  return content
+}
+
+async function chatStream(
+  messages: Array<Msg>,
+  opts?: { onDelta?: (chunk: string) => void; signal?: AbortSignal }
+): Promise<string> {
+  const key = getApiKey()
+  // Use SSE for more reliable streaming parsing
+  const url = `${GEMINI_API_BASE}/models/${encodeURIComponent(
+    GEMINI_MODEL
+  )}:streamGenerateContent?alt=sse`
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': key,
+    },
+    body: JSON.stringify(toGeminiPayload(messages)),
+    signal: opts?.signal,
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Gemini stream error ${res.status}: ${text}`)
+  }
+
+  if (!res.body) {
+    // Fallback: no stream support; do a non-streaming call
+    return chat(messages)
+  }
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder('utf-8')
+  let buffer = ''
+  let full = ''
+
+  function extractText(obj: any): string {
+    // Common shapes across stream events
+    const parts = obj?.candidates?.[0]?.content?.parts
+    if (Array.isArray(parts)) {
+      return parts
+        .map((p: any) => (typeof p?.text === 'string' ? p.text : ''))
+        .join('')
+    }
+    // Some events may include delta objects
+    const deltaText = obj?.candidates?.[0]?.delta?.text
+    if (typeof deltaText === 'string') return deltaText
+    const deltaParts = obj?.candidates?.[0]?.delta?.parts
+    if (Array.isArray(deltaParts)) {
+      return deltaParts
+        .map((p: any) => (typeof p?.text === 'string' ? p.text : ''))
+        .join('')
+    }
+    // Rare: plain text on root
+    if (typeof obj?.text === 'string') return obj.text
+    return ''
+  }
+
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    let idx: number
+    // Process Server-Sent Events (SSE) lines: "event: ..." and "data: ..."
+    while ((idx = buffer.indexOf('\n')) !== -1) {
+      let line = buffer.slice(0, idx)
+      buffer = buffer.slice(idx + 1)
+      const trimmed = line.trim()
+      if (!trimmed) continue
+      if (trimmed.startsWith('data:')) {
+        const payload = trimmed.slice(5).trim()
+        if (!payload || payload === '[DONE]') continue
+        try {
+          const obj = JSON.parse(payload)
+          const chunk = extractText(obj)
+          if (chunk) {
+            full += chunk
+            opts?.onDelta?.(chunk)
+          }
+        } catch {
+          // Ignore non-JSON lines or partials
+        }
+      }
+      // Ignore other SSE fields like "event:" or comments
+    }
+  }
+
+  // Try to parse any leftover SSE data line
+  const last = buffer.trim()
+  if (last.startsWith('data:')) {
+    const payload = last.slice(5).trim()
+    if (payload && payload !== '[DONE]') {
+      try {
+        const obj = JSON.parse(payload)
+        const chunk = extractText(obj)
+        if (chunk) {
+          full += chunk
+          opts?.onDelta?.(chunk)
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  const finalText = full.trim()
+  if (!finalText) {
+    // Last-resort fallback: attempt non-streaming request
+    const fallback = await chat(messages)
+    if (fallback && fallback.trim()) return fallback.trim()
+    throw new Error('No content returned from Gemini stream')
+  }
+  return finalText
 }
 
 export async function generateAIAnswer(
   question: string,
-  humanAnswer?: string
+  humanAnswer?: string,
+  options?: { onDelta?: (chunk: string) => void; signal?: AbortSignal }
 ): Promise<string> {
   const messages = [
     {
@@ -58,7 +216,10 @@ export async function generateAIAnswer(
           : 'Provide your perspective.'),
     },
   ]
-  return chat(messages)
+  return chatStream(messages, {
+    onDelta: options?.onDelta,
+    signal: options?.signal,
+  })
 }
 
 export async function continueCollaborativeResponse(
@@ -66,7 +227,8 @@ export async function continueCollaborativeResponse(
   human: string,
   ai: string,
   collabSoFar: string,
-  lastHumanTurn?: string
+  lastHumanTurn?: string,
+  options?: { onDelta?: (chunk: string) => void; signal?: AbortSignal }
 ): Promise<string> {
   const system =
     'You are collaborating with a human to co-write a single, empathetic and balanced response. Write as the AI collaborator. Output only the next 1–2 sentences. Be specific, acknowledge or build on the human’s latest point, and keep tightly on-topic to the question. Do not repeat prior content, restate the question, or add generic transitions.'
@@ -79,10 +241,13 @@ export async function continueCollaborativeResponse(
       ? `Human’s latest addition to the collaborative response (respond to this directly):\n"""${lastHumanTurn}"""\n\n`
       : '') +
     'As the AI, write only the next 1–2 sentences to advance this same response. No preface, no bullet points.'
-  return chat([
-    { role: 'system', content: system },
-    { role: 'user', content: user },
-  ])
+  return chatStream(
+    [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
+    { onDelta: options?.onDelta, signal: options?.signal }
+  )
 }
 
 function lowerKeys<T extends Record<string, any>>(
@@ -196,13 +361,17 @@ function ensureScores(x: any): TraitScores {
 export async function generateInsight(
   human: string,
   ai: string,
-  collab: string
+  collab: string,
+  options?: { onDelta?: (chunk: string) => void; signal?: AbortSignal }
 ): Promise<string> {
   const system =
     'You succinctly explain how tones and reasoning converged between a human and an AI. 120-180 words, actionable, compassionate.'
   const user = `Summarize convergence of tone and reasoning.\nHUMAN:\n"""${human}"""\nAI:\n"""${ai}"""\nCOLLAB:\n"""${collab}"""`
-  return chat([
-    { role: 'system', content: system },
-    { role: 'user', content: user },
-  ])
+  return chatStream(
+    [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
+    { onDelta: options?.onDelta, signal: options?.signal }
+  )
 }

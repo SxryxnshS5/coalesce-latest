@@ -29,7 +29,16 @@ export default function Step2Answers() {
   const handleGenerateAI = async () => {
     try {
       setLoading({ ai: true })
-      const text = await generateAIAnswer(question, humanAnswer)
+      // Start fresh and stream into the editor
+      let acc = ''
+      setAIAnswer(acc)
+      const text = await generateAIAnswer(question, humanAnswer, {
+        onDelta: (chunk) => {
+          acc += chunk
+          setAIAnswer(acc)
+        },
+      })
+      // Ensure final text is set (in case of any missed chunks)
       setAIAnswer(text)
     } catch (e: any) {
       toast({
