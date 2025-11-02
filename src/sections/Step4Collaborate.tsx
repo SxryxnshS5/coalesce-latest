@@ -13,7 +13,7 @@ import Editor from '../components/Editor'
 import RadarTraits from '../components/RadarTraits'
 import { useAppStore } from '../store/app'
 import { analyzeSingle, continueCollaborativeResponse } from '../lib/openai'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 export default function Step4Collaborate() {
   const toast = useToast()
@@ -92,6 +92,51 @@ export default function Step4Collaborate() {
     [setTraits, traits]
   )
 
+  // Initialize collab radar at 0% on step entry and update live for both user and AI typing
+  const debounceRef = useRef<number | null>(null)
+  useEffect(() => {
+    // On mount: ensure collab starts at 0%
+    setTraits({
+      ...traits,
+      collab: {
+        empathy: 0,
+        confidence: 0,
+        rationality: 0,
+        warmth: 0,
+      },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (debounceRef.current) window.clearTimeout(debounceRef.current)
+    debounceRef.current = window.setTimeout(async () => {
+      const text = collabText || ''
+      if (!text.trim()) {
+        // Keep zeros if empty
+        setTraits({
+          ...traits,
+          collab: {
+            empathy: 0,
+            confidence: 0,
+            rationality: 0,
+            warmth: 0,
+          },
+        })
+        return
+      }
+      try {
+        const scores = await analyzeSingle(text)
+        setTraits({ ...traits, collab: scores })
+      } catch {
+        // ignore transient analyze errors during typing/streaming
+      }
+    }, 700)
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current)
+    }
+  }, [collabText, setTraits, traits])
+
   return (
     <LayoutCard>
       <VStack align='stretch' spacing={4}>
@@ -104,7 +149,7 @@ export default function Step4Collaborate() {
           label='Collaborative response'
           value={collabText}
           onChange={setCollabText}
-          onDebouncedChange={handleDebouncedAnalyze}
+          // Live analysis is handled via useEffect above so updates reflect both user and AI typing
           rows={12}
           placeholder={placeholder}
           rightAction={{

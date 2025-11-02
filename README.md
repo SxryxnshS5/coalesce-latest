@@ -9,7 +9,7 @@ A modern single-page app for human–AI collaboration and trait visualization.
 - Framer Motion (animated transitions)
 - Recharts (radar + bar charts)
 - Zustand (global state)
-- Google Gemini API (default: gemini-1.5-pro)
+- Google Gemini API (default: gemini-2.5-pro)
 
 ## Setup
 
