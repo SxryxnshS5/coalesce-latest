@@ -101,11 +101,12 @@ export default function Step5Compare() {
           See all three voices together and generate a succinct takeaway.
         </Text>
         <RadarTraits data={traits} />
-        <HStack>
+        <HStack flexDirection={{ base: 'column', sm: 'row' }} gap={2}>
           <Button
             onClick={ensureAnalysis}
             variant='ghost'
             isLoading={loading.analyze}
+            width={{ base: 'full', sm: 'auto' }}
           >
             Re-analyze
           </Button>
@@ -113,10 +114,15 @@ export default function Step5Compare() {
             colorScheme='gray'
             onClick={handleInsight}
             isLoading={loading.insight}
+            width={{ base: 'full', sm: 'auto' }}
           >
             Generate insight
           </Button>
-          <Button onClick={handleCopy} isLoading={copying}>
+          <Button
+            onClick={handleCopy}
+            isLoading={copying}
+            width={{ base: 'full', sm: 'auto' }}
+          >
             Copy insight & response
           </Button>
         </HStack>
@@ -125,14 +131,32 @@ export default function Step5Compare() {
             <Text fontSize='sm' color='whiteAlpha.700'>
               Insight
             </Text>
-            <Textarea value={insight} readOnly rows={12} variant='filled' />
+            <Textarea
+              value={insight}
+              readOnly
+              rows={12}
+              minH={{ base: '180px', md: '240px' }}
+              variant='filled'
+            />
           </VStack>
         )}
-        <HStack justify='space-between'>
-          <Button onClick={reset} variant='ghost'>
+        <HStack
+          justify='space-between'
+          flexDirection={{ base: 'column', sm: 'row' }}
+          gap={2}
+        >
+          <Button
+            onClick={reset}
+            variant='ghost'
+            width={{ base: 'full', sm: 'auto' }}
+          >
             Start over
           </Button>
-          <Button onClick={() => setStep(4)} variant='ghost'>
+          <Button
+            onClick={() => setStep(4)}
+            variant='ghost'
+            width={{ base: 'full', sm: 'auto' }}
+          >
             Back to collaborate
           </Button>
         </HStack>

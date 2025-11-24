@@ -7,7 +7,11 @@ export default function Stepper({ step }: Props) {
   const labels = ['Question', 'Answers', 'Traits', 'Collaborate', 'Insight']
   return (
     <Box mb={4}>
-      <HStack justify='space-between' mb={2}>
+      <HStack
+        justify='space-between'
+        mb={2}
+        display={{ base: 'none', sm: 'flex' }}
+      >
         {labels.map((l, i) => (
           <Text
             key={l}

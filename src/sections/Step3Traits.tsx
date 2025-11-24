@@ -71,11 +71,24 @@ export default function Step3Traits() {
         </Text>
         <RadarTraits data={traits} showCollab={false} />
         <BarTraits human={traits.human} ai={traits.ai} />
-        <HStack justify='space-between'>
-          <Button variant='ghost' onClick={run} isLoading={loading.analyze}>
+        <HStack
+          justify='space-between'
+          flexDirection={{ base: 'column', sm: 'row' }}
+          gap={2}
+        >
+          <Button
+            variant='ghost'
+            onClick={run}
+            isLoading={loading.analyze}
+            width={{ base: 'full', sm: 'auto' }}
+          >
             Re-analyze
           </Button>
-          <Button colorScheme='gray' onClick={() => setStep(4)}>
+          <Button
+            colorScheme='gray'
+            onClick={() => setStep(4)}
+            width={{ base: 'full', sm: 'auto' }}
+          >
             Next: Collaborate
           </Button>
         </HStack>

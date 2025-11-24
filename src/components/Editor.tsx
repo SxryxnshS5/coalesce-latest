@@ -16,7 +16,7 @@ type EditorProps = {
   onDebouncedChange?: (value: string) => void
   debounceMs?: number
   placeholder?: string
-  rows?: number
+  rows?: number | { base?: number; sm?: number; md?: number; lg?: number }
   rightAction?: {
     label: string
     onClick: () => void
@@ -64,11 +64,15 @@ export default function Editor({
 
   return (
     <FormControl>
-      <HStack justify='space-between' mb={2}>
+      <HStack justify='space-between' mb={2} flexWrap='wrap' gap={2}>
         <FormLabel m={0}>{label}</FormLabel>
-        <HStack spacing={3}>
+        <HStack spacing={3} flexWrap='wrap'>
           {rightHint && (
-            <Text fontSize='xs' color='whiteAlpha.800'>
+            <Text
+              fontSize='xs'
+              color='whiteAlpha.800'
+              display={{ base: 'none', sm: 'block' }}
+            >
               {rightHint}
             </Text>
           )}
@@ -82,13 +86,21 @@ export default function Editor({
                 isLoading={rightAction.isLoading}
                 variant='ghost'
               />
-              <Text fontSize='xs' color='whiteAlpha.800'>
+              <Text
+                fontSize='xs'
+                color='whiteAlpha.800'
+                display={{ base: 'none', sm: 'block' }}
+              >
                 {rightAction.label}
                 {rightAction.hotkey ? ` (${rightAction.hotkey})` : ''}
               </Text>
             </HStack>
           )}
-          <Text fontSize='xs' color='whiteAlpha.700'>
+          <Text
+            fontSize='xs'
+            color='whiteAlpha.700'
+            display={{ base: 'none', sm: 'block' }}
+          >
             {count} chars
           </Text>
         </HStack>
@@ -107,7 +119,15 @@ export default function Editor({
           }
         }}
         placeholder={placeholder}
-        rows={rows}
+        rows={typeof rows === 'object' ? rows.md || rows.base || 8 : rows}
+        minH={
+          typeof rows === 'object'
+            ? {
+                base: `${(rows.base || 8) * 24}px`,
+                md: `${(rows.md || 12) * 24}px`,
+              }
+            : undefined
+        }
         resize='vertical'
         autoFocus={autoFocus}
         variant='filled'

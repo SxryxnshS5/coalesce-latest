@@ -38,6 +38,11 @@ export default function Step1Question() {
                 variant='ghost'
                 onClick={() => setQuestion(e)}
                 justifyContent='flex-start'
+                textAlign='left'
+                whiteSpace='normal'
+                height='auto'
+                py={3}
+                px={4}
               >
                 {e}
               </Button>
@@ -48,7 +53,8 @@ export default function Step1Question() {
           colorScheme='gray'
           isDisabled={!question.trim()}
           onClick={() => setStep(2)}
-          alignSelf='flex-end'
+          alignSelf={{ base: 'stretch', sm: 'flex-end' }}
+          width={{ base: 'full', sm: 'auto' }}
         >
           Next: Write answers
         </Button>

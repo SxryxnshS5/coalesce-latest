@@ -1,3 +1,4 @@
+import { Box } from '@chakra-ui/react'
 import {
   ResponsiveContainer,
   BarChart,
@@ -31,25 +32,42 @@ function toRows(h?: TraitScores, a?: TraitScores) {
 export default function BarTraits({ human, ai }: Props) {
   const rows = toRows(human, ai)
   return (
-    <ResponsiveContainer width='100%' height={320}>
-      <BarChart data={rows} margin={{ top: 8, right: 16, left: 4, bottom: 8 }}>
-        <CartesianGrid strokeDasharray='3 3' stroke='rgba(255,255,255,0.15)' />
-        <XAxis dataKey='trait' tick={{ fill: 'rgba(255,255,255,0.85)' }} />
-        <YAxis
-          domain={[0, 1]}
-          tickFormatter={(v: number) => `${Math.round(Number(v) * 100)}%`}
-          tick={{ fill: 'rgba(255,255,255,0.85)' }}
-        />
-        <Tooltip formatter={(v: any) => `${Math.round(Number(v) * 100)}%`} />
-        <Legend />
-        <Bar
-          dataKey='human'
-          name='Human'
-          fill='#ec4899'
-          radius={[6, 6, 0, 0]}
-        />
-        <Bar dataKey='ai' name='AI' fill='#22d3ee' radius={[6, 6, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <Box h={{ base: '240px', md: '320px' }} w='100%'>
+      <ResponsiveContainer width='100%' height='100%'>
+        <BarChart
+          data={rows}
+          margin={{ top: 8, right: 16, left: 4, bottom: 8 }}
+        >
+          <CartesianGrid
+            strokeDasharray='3 3'
+            stroke='rgba(255,255,255,0.15)'
+          />
+          <XAxis
+            dataKey='trait'
+            tick={{
+              fill: 'rgba(255,255,255,0.85)',
+              fontSize: { base: 10, md: 12 } as any,
+            }}
+          />
+          <YAxis
+            domain={[0, 1]}
+            tickFormatter={(v: number) => `${Math.round(Number(v) * 100)}%`}
+            tick={{
+              fill: 'rgba(255,255,255,0.85)',
+              fontSize: { base: 10, md: 12 } as any,
+            }}
+          />
+          <Tooltip formatter={(v: any) => `${Math.round(Number(v) * 100)}%`} />
+          <Legend />
+          <Bar
+            dataKey='human'
+            name='Human'
+            fill='#ec4899'
+            radius={[6, 6, 0, 0]}
+          />
+          <Bar dataKey='ai' name='AI' fill='#22d3ee' radius={[6, 6, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </Box>
   )
 }

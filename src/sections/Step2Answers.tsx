@@ -82,7 +82,7 @@ export default function Step2Answers() {
               value={humanAnswer}
               onChange={setHumanAnswer}
               placeholder='Write thoughtfully (150-250 words)...'
-              rows={12}
+              rows={{ base: 8, md: 12 }}
               autoFocus
             />
           </GridItem>
@@ -92,7 +92,7 @@ export default function Step2Answers() {
               value={aiAnswer}
               onChange={setAIAnswer}
               placeholder='Click the refresh icon or paste your own...'
-              rows={12}
+              rows={{ base: 8, md: 12 }}
               rightAction={{
                 label: 'Generate AI answer',
                 onClick: handleGenerateAI,
@@ -101,11 +101,12 @@ export default function Step2Answers() {
             />
           </GridItem>
         </Grid>
-        <VStack align='end'>
+        <VStack align={{ base: 'stretch', sm: 'end' }}>
           <Button
             colorScheme='gray'
             isDisabled={!humanAnswer.trim() || !aiAnswer.trim()}
             onClick={() => setStep(3)}
+            width={{ base: 'full', sm: 'auto' }}
           >
             Next: Analyze traits
           </Button>

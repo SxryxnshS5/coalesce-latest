@@ -150,7 +150,7 @@ export default function Step4Collaborate() {
           value={collabText}
           onChange={setCollabText}
           // Live analysis is handled via useEffect above so updates reflect both user and AI typing
-          rows={12}
+          rows={{ base: 8, md: 12 }}
           placeholder={placeholder}
           rightAction={{
             label: "Trigger AI's answer",
@@ -173,6 +173,7 @@ export default function Step4Collaborate() {
             colorScheme='gray'
             onClick={() => setStep(5)}
             isDisabled={!collabText.trim()}
+            width={{ base: 'full', sm: 'auto' }}
           >
             Next: Compare & insight
           </Button>
