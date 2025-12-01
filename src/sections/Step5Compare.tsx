@@ -10,7 +10,7 @@ import {
 import LayoutCard from '../components/LayoutCard'
 import RadarTraits from '../components/RadarTraits'
 import { useAppStore } from '../store/app'
-import { analyzeTraits, generateInsight } from '../lib/gemini'
+import { analyzeTraits, generateInsight } from '../lib/openai'
 import { useState } from 'react'
 
 export default function Step5Compare() {
